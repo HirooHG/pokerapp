@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'game_communication.dart';
+import 'Lobbies_page.dart';
 
 class StartPage extends StatefulWidget {
   const StartPage({super.key});
@@ -49,12 +50,7 @@ class _StartPageState extends State<StartPage> {
     List<Widget> children = playersList.map((playerInfo) {
       return ListTile(
         title: Text(playerInfo["name"]),
-        trailing: game.playerId == playerInfo["id"] ? const Text("Me") : TextButton(
-          onPressed: (){
-
-          },
-          child: const Text('Play'),
-        ),
+        trailing: game.playerId == playerInfo["id"] ? const Text("Me") : const SizedBox(width: 0, height: 0)
       );
     }).toList();
 
@@ -102,13 +98,31 @@ class _StartPageState extends State<StartPage> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('TicTacToe'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const LobbiesPage()));
+              },
+              child: const Text("Lobbies", style: TextStyle(color: Colors.white)),
+            )
+          ],
         ),
         body: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               _buildJoin(),
-              const Text('List of players:'),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 30),
+                child: Text(
+                  'List of players:',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold
+                  ),
+                ),
+              ),
               _playersList(),
             ],
           ),
