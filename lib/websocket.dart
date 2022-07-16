@@ -3,7 +3,7 @@ import 'package:web_socket_channel/io.dart';
 
 WebSocketsNotifications sockets = WebSocketsNotifications();
 
-const String _serverAdress = "ws://192.168.8.10:34263";
+const String _serverAdress = "ws://192.168.8.10:444";
 
 class WebSocketsNotifications {
   static final WebSocketsNotifications _sockets = WebSocketsNotifications._internal();
@@ -17,7 +17,7 @@ class WebSocketsNotifications {
   bool _isOn = false;
   final _listeners = ObserverList<Function>();
 
-  initCommunication() async {
+  initCommunication() async{
 
     reset();
 
