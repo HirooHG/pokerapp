@@ -38,7 +38,7 @@ class _StartPageState extends State<StartPage> {
   }
   _onGameJoin(){
     game.send('join', _name.text);
-
+    isIn = true;
     setState(() {});
   }
 
@@ -100,7 +100,7 @@ class _StartPageState extends State<StartPage> {
         appBar: AppBar(
           title: const Text('TicTacToe'),
           actions: [
-            (isIn) ? Container() : TextButton(
+            (!isIn) ? Container() : TextButton(
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const LobbiesPage()));
               },
