@@ -41,10 +41,24 @@ class LobbiesPageState extends State<LobbiesPage>{
 
     List<Widget> children = lobbiesList.map((lobby) {
       int number = lobby["index"] as int;
+      int numberofplayer = lobby["numberofplayer"] as int;
       number++;
 
-      return ListTile(
-        title: Text("Lobby $number")
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 30),
+        child: ListTile(
+          title: Text(
+            "Lobby $number",
+            style: const TextStyle(
+                color: Colors.blue,
+                fontSize: 20
+            ),
+          ),
+          isThreeLine: true,
+          subtitle: Center(
+            child: Text("number of player : $numberofplayer"),
+          ),
+        ),
       );
     }).toList();
 
@@ -60,31 +74,33 @@ class LobbiesPageState extends State<LobbiesPage>{
     var height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Padding(
-            padding: EdgeInsets.fromLTRB(0, height * 0.1, 0, height * 0.05),
-            child: const Text(
-              'List of Lobbies:',
-              style: TextStyle(
-                color: Colors.blue,
-                fontSize: 40,
-                fontWeight: FontWeight.bold
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, height * 0.1, 0, height * 0.05),
+              child: const Text(
+                'List of Lobbies:',
+                style: TextStyle(
+                    color: Colors.blue,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold
+                ),
               ),
             ),
-          ),
-          Container(
-            color: Colors.blue,
-            child: TextButton(
-              onPressed: () {
-                game.send("new_lobby", "");
-              },
-              child: const Text("New Lobby", style: TextStyle(color: Colors.white)),
+            Container(
+              color: Colors.blue,
+              child: TextButton(
+                onPressed: () {
+                  game.send("new_lobby", "");
+                },
+                child: const Text("New Lobby", style: TextStyle(color: Colors.white)),
+              ),
             ),
-          ),
-          _lobbiesList()
-        ],
+            _lobbiesList()
+          ],
+        ),
       )
     );
   }

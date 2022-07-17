@@ -12,6 +12,7 @@ class _StartPageState extends State<StartPage> {
   static final TextEditingController _name = TextEditingController();
   late String playerName;
   List<dynamic> playersList = <dynamic>[];
+  bool isIn = false;
 
   @override
   void initState(){
@@ -99,7 +100,7 @@ class _StartPageState extends State<StartPage> {
         appBar: AppBar(
           title: const Text('TicTacToe'),
           actions: [
-            TextButton(
+            (isIn) ? Container() : TextButton(
               onPressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const LobbiesPage()));
               },
