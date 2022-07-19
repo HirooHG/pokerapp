@@ -55,10 +55,21 @@ class LobbiesPageState extends State<LobbiesPage>{
             ),
           ),
           isThreeLine: true,
-          subtitle: Center(
-            child: Text("number of player : $numberofplayer"),
+          subtitle: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Center(
+              child: Text("number of player : $numberofplayer"),
+            ),
           ),
-        ),
+          trailing: Container(
+            color: Colors.blue,
+            child: TextButton(
+              child: const Text("Join", style: TextStyle(color: Colors.white)),
+              onPressed: () {
+              },
+            )
+          )
+        )
       );
     }).toList();
 
