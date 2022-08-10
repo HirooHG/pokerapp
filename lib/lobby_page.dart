@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pokerapp/Lobbies_page.dart';
+import 'Lobbies_page.dart';
 import 'game_communication.dart';
 
 class LobbyPage extends StatefulWidget {
@@ -52,7 +52,12 @@ class _LobbyPageState extends State<LobbyPage>{
 
     List<Widget> children = playersList.map((playerInfo) {
       return ListTile(
-          title: Text(playerInfo["name"]),
+          title: Text(
+            playerInfo["name"],
+            style: const TextStyle(
+              fontSize: 25
+            ),
+          ),
           trailing: game.playerId == playerInfo["id"] ? const Text("Me") : const SizedBox(width: 0, height: 0)
       );
     }).toList();
@@ -72,8 +77,7 @@ class _LobbyPageState extends State<LobbyPage>{
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Container(
-              color: Colors.black,
+            SizedBox(
               height: height * 0.3,
               child: Center(
                   child: Column(
