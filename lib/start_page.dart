@@ -36,6 +36,7 @@ class _StartPageState extends State<StartPage> {
         break;
     }
   }
+
   _onGameJoin(){
     if(_name.text.isNotEmpty){
       game.send('join', _name.text);

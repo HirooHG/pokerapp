@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'game_communication.dart';
+import 'lobby_page.dart';
 
 Future<void> popup({String? title = "", String? text = "", required BuildContext context}) async{
 
@@ -29,7 +30,6 @@ Future<void> popup({String? title = "", String? text = "", required BuildContext
     },
   );
 }
-
 
 class LobbiesPage extends StatefulWidget{
   const LobbiesPage({super.key});
@@ -62,8 +62,9 @@ class LobbiesPageState extends State<LobbiesPage>{
         lobbiesList = message["data"];
         setState(() {});
         break;
-      case 'alreadyIn':
-        popup(context: context, text: "already in !", title: "yay !");
+      case "new_lobby":
+        int number = message["data"] as int;
+        Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(number: number)));
         break;
     }
   }
@@ -73,9 +74,9 @@ class LobbiesPageState extends State<LobbiesPage>{
     if(lobbiesList.isEmpty) return Container();
 
     List<Widget> children = lobbiesList.map((lobby) {
-      int number = lobby["index"] as int;
+      int index = lobby["index"] as int;
       int numberofplayer = lobby["numberofplayer"] as int;
-      number++;
+      int number = index + 1;
 
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 30),
@@ -99,10 +100,8 @@ class LobbiesPageState extends State<LobbiesPage>{
             child: TextButton(
               child: const Text("Join", style: TextStyle(color: Colors.white)),
               onPressed: () {
-                game.send("onjoinlobby", "${number - 1}");
-
-                //go to the lobby
-                //Navigator.push(context, MaterialPageRoute(builder: (context) => ));
+                game.send("onjoinlobby", "$index");
+                Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(number: index)));
               },
             )
           )
