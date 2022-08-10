@@ -1,5 +1,35 @@
+
 import 'package:flutter/material.dart';
 import 'game_communication.dart';
+
+Future<void> popup({String? title = "", String? text = "", required BuildContext context}) async{
+
+  await showDialog<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title!),
+        content: Text(
+          text!,
+          style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontSize: 15
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 
 class LobbiesPage extends StatefulWidget{
   const LobbiesPage({super.key});
@@ -31,6 +61,9 @@ class LobbiesPageState extends State<LobbiesPage>{
       case 'lobbies_list':
         lobbiesList = message["data"];
         setState(() {});
+        break;
+      case 'alreadyIn':
+        popup(context: context, text: "already in !", title: "yay !");
         break;
     }
   }
@@ -66,6 +99,10 @@ class LobbiesPageState extends State<LobbiesPage>{
             child: TextButton(
               child: const Text("Join", style: TextStyle(color: Colors.white)),
               onPressed: () {
+                game.send("onjoinlobby", "${number - 1}");
+
+                //go to the lobby
+                //Navigator.push(context, MaterialPageRoute(builder: (context) => ));
               },
             )
           )
@@ -109,7 +146,7 @@ class LobbiesPageState extends State<LobbiesPage>{
                 child: const Text("New Lobby", style: TextStyle(color: Colors.white)),
               ),
             ),
-            _lobbiesList()
+            _lobbiesList(),
           ],
         ),
       )

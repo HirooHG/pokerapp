@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       DeviceOrientation.portraitDown
     ]);
     return MaterialApp(
-      title: 'Tic Tac Toe',
+      title: 'Poker',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

@@ -37,9 +37,11 @@ class _StartPageState extends State<StartPage> {
     }
   }
   _onGameJoin(){
-    game.send('join', _name.text);
-    isIn = true;
-    setState(() {});
+    if(_name.text.isNotEmpty){
+      game.send('join', _name.text);
+      isIn = true;
+      setState(() {});
+    }
   }
 
   Widget _playersList(){
@@ -98,7 +100,7 @@ class _StartPageState extends State<StartPage> {
       top: false,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('TicTacToe'),
+          title: const Text('Poker App'),
           actions: [
             (!isIn) ? Container() : TextButton(
               onPressed: () {
