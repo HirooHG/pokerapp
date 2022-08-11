@@ -25,6 +25,7 @@ class _LobbyPageState extends State<LobbyPage>{
 
   @override
   void dispose(){
+    game.removeListener(_onGameDataReceived);
     game.send("leave_lobby", "${widget.number}");
 
     super.dispose();
@@ -51,18 +52,20 @@ class _LobbyPageState extends State<LobbyPage>{
     }
 
     List<Widget> children = playersList.map((playerInfo) {
-      return ListTile(
-          title: Text(
-            playerInfo["name"],
-            style: const TextStyle(
-              fontSize: 25
+      return Card(
+        child: ListTile(
+            title: Text(
+              playerInfo["name"],
+              style: const TextStyle(
+                  fontSize: 25
+              ),
             ),
-          ),
-          trailing: game.playerId == playerInfo["id"] ? const Text("Me") : const SizedBox(width: 0, height: 0)
+            trailing: game.playerId == playerInfo["id"] ? const Text("Me", style: TextStyle(fontSize: 25),) : const SizedBox(width: 0, height: 0)
+        ),
       );
     }).toList();
 
-    return Column(
+    return ListView(
       children: children,
     );
   }
@@ -74,38 +77,53 @@ class _LobbyPageState extends State<LobbyPage>{
     var height = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: height * 0.3,
-              child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Lobby ${widget.number + 1}',
-                        style: const TextStyle(
-                            color: Colors.blue,
-                            fontSize: 80,
-                            fontWeight: FontWeight.bold
-                        ),
+      body: Column(
+        children: [
+          SizedBox(
+            height: height * 0.3,
+            child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Lobby ${widget.number + 1}',
+                      style: const TextStyle(
+                          color: Colors.blue,
+                          fontSize: 80,
+                          fontWeight: FontWeight.bold
                       ),
-                      const Text(
-                        'players :',
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 30
-                        ),
+                    ),
+                    const Text(
+                      'players :',
+                      style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 30
                       ),
-                    ],
-                  )
+                    ),
+                  ],
+                )
+            ),
+          ),
+          Container(
+              width: width,
+              height: height * 0.55,
+              child: _playersList()
+          ),
+          Expanded(
+            child: TextButton(
+              onPressed: playersList.length > 1 ? () {
+                // TODO: the things here
+              } : null,
+              child: const Text(
+                "Begin",
+                style: TextStyle(
+                  fontSize: 40,
+                ),
               ),
             ),
-            _playersList()
-          ],
-        ),
-      )
+          )
+        ],
+      ),
     );
   }
 }

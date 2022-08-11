@@ -52,9 +52,11 @@ class _StartPageState extends State<StartPage> {
     }
 
     List<Widget> children = playersList.map((playerInfo) {
-      return ListTile(
-        title: Text(playerInfo["name"]),
-        trailing: game.playerId == playerInfo["id"] ? const Text("Me") : const SizedBox(width: 0, height: 0)
+      return Card(
+        child: ListTile(
+            title: Text(playerInfo["name"]),
+            trailing: game.playerId == playerInfo["id"] ? const Text("Me") : const SizedBox(width: 0, height: 0)
+        ),
       );
     }).toList();
 
