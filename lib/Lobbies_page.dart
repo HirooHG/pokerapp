@@ -62,9 +62,8 @@ class LobbiesPageState extends State<LobbiesPage>{
         lobbiesList = message["data"];
         setState(() {});
         break;
-      case "new_lobby":
-        int number = message["data"] as int;
-        Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(number: number)));
+      case "newlobby":
+
         break;
     }
   }
@@ -100,8 +99,8 @@ class LobbiesPageState extends State<LobbiesPage>{
             child: TextButton(
               child: const Text("Join", style: TextStyle(color: Colors.white)),
               onPressed: () {
-                game.send("onjoinlobby", "$index");
-                Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(number: index)));
+                //game.send("onjoinlobby", "$index");
+                //Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(number: index)));
               },
             )
           )
