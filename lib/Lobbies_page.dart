@@ -62,8 +62,9 @@ class LobbiesPageState extends State<LobbiesPage>{
         lobbiesList = message["data"];
         setState(() {});
         break;
-      case "newlobby":
-
+      case "joinlobby":
+        //var indexLobby = message["data"];
+        //Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(number: indexLobby)));
         break;
     }
   }
@@ -74,7 +75,7 @@ class LobbiesPageState extends State<LobbiesPage>{
 
     List<Widget> children = lobbiesList.map((lobby) {
       int index = lobby["index"] as int;
-      int numberofplayer = lobby["numberofplayer"] as int;
+      int numberofplayer = int.parse(lobby["numberofplayer"]);
       int number = index + 1;
 
       return Padding(
@@ -99,8 +100,7 @@ class LobbiesPageState extends State<LobbiesPage>{
             child: TextButton(
               child: const Text("Join", style: TextStyle(color: Colors.white)),
               onPressed: () {
-                //game.send("onjoinlobby", "$index");
-                //Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(number: index)));
+                game.send("onjoinlobby", "$index");
               },
             )
           )
@@ -139,7 +139,7 @@ class LobbiesPageState extends State<LobbiesPage>{
               color: Colors.blue,
               child: TextButton(
                 onPressed: () {
-                  game.send("new_lobby", "");
+                  game.send("onjoinlobby", "");
                 },
                 child: const Text("New Lobby", style: TextStyle(color: Colors.white)),
               ),
