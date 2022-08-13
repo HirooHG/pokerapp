@@ -171,7 +171,6 @@ const poker = new Poker();
 wsServer.on('request', function(request) {
 
     let connection = request.accept(null, request.origin);
-    console.log(connection);
     let player = new Player(request.key, connection);
 
     poker.pushPlayer(player);
