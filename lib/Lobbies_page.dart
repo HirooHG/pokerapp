@@ -41,6 +41,9 @@ class LobbiesPageState extends State<LobbiesPage>{
 
   List<dynamic> lobbiesList = <dynamic>[];
 
+  late double width;
+  late double height;
+
   @override
   void initState(){
     super.initState();
@@ -62,9 +65,9 @@ class LobbiesPageState extends State<LobbiesPage>{
         lobbiesList = message["data"];
         setState(() {});
         break;
-      case "joinlobby":
-        //var indexLobby = message["data"];
-        //Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(number: indexLobby)));
+      case "onjoinlobby":
+        var index = message["data"];
+        Navigator.push(context, MaterialPageRoute(builder: (context) => LobbyPage(index: index)));
         break;
     }
   }
@@ -75,7 +78,7 @@ class LobbiesPageState extends State<LobbiesPage>{
 
     List<Widget> children = lobbiesList.map((lobby) {
       int index = lobby["index"] as int;
-      int numberofplayer = int.parse(lobby["numberofplayer"]);
+      int numberofplayer = lobby["numberOfPlayer"] as int;
       int number = index + 1;
 
       return Padding(
@@ -95,13 +98,32 @@ class LobbiesPageState extends State<LobbiesPage>{
               child: Text("number of player : $numberofplayer"),
             ),
           ),
-          trailing: Container(
-            color: Colors.blue,
-            child: TextButton(
-              child: const Text("Join", style: TextStyle(color: Colors.white)),
-              onPressed: () {
-                game.send("onjoinlobby", "$index");
-              },
+          trailing: SizedBox(
+            width: width * 0.45,
+            child: Row(
+              children: [
+                Container(
+                  color: Colors.blue,
+                  child: TextButton(
+                    child: const Text("Delete", style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      game.send("onDeletelobby", "$index");
+                    },
+                  ),
+                ),
+                const SizedBox(
+                  width: 20,
+                ),
+                Container(
+                  color: Colors.blue,
+                  child: TextButton(
+                    child: const Text("Join", style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      game.send("onjoinlobby", "$index");
+                    },
+                  ),
+                )
+              ],
             )
           )
         )
@@ -116,8 +138,8 @@ class LobbiesPageState extends State<LobbiesPage>{
   @override
   Widget build(BuildContext context){
 
-    var width = MediaQuery.of(context).size.width;
-    var height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
+    height = MediaQuery.of(context).size.height;
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -139,7 +161,7 @@ class LobbiesPageState extends State<LobbiesPage>{
               color: Colors.blue,
               child: TextButton(
                 onPressed: () {
-                  game.send("onjoinlobby", "");
+                  game.send("onjoinlobby", "-1");
                 },
                 child: const Text("New Lobby", style: TextStyle(color: Colors.white)),
               ),
