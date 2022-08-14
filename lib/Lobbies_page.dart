@@ -84,34 +84,38 @@ class LobbiesPageState extends State<LobbiesPage>{
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 30),
         child: Card(
+          margin: EdgeInsets.symmetric(horizontal: width * 0.05),
           elevation: 20.0,
-          child: ListTile(
-              title: Text(
-                "Lobby $number",
-                style: const TextStyle(
-                    color: Colors.blue,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: height * 0.03),
+            child: ListTile(
+                title: Text(
+                  "Lobby $number",
+                  style: const TextStyle(
+                      color: Colors.blue,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold
+                  ),
                 ),
-              ),
-              isThreeLine: true,
-              subtitle: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                child: Center(
-                  child: Text("number of player : $numberofplayer"),
+                isThreeLine: true,
+                subtitle: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Center(
+                    child: Text("number of player : $numberofplayer"),
+                  ),
                 ),
-              ),
-              trailing: Container(
-                width: width * 0.3,
-                color: Colors.blue,
-                child: TextButton(
-                  child: const Text("Join", style: TextStyle(color: Colors.white)),
-                  onPressed: () {
-                    game.send("onjoinlobby", "$index");
-                  },
-                ),
-              )
-          ),
+                trailing: Container(
+                  width: width * 0.3,
+                  color: Colors.blue,
+                  child: TextButton(
+                    child: const Text("Join", style: TextStyle(color: Colors.white)),
+                    onPressed: () {
+                      game.send("onjoinlobby", "$index");
+                    },
+                  ),
+                )
+            ),
+          )
         )
       );
     }).toList();
