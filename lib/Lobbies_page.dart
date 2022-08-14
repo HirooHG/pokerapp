@@ -83,49 +83,35 @@ class LobbiesPageState extends State<LobbiesPage>{
 
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 30),
-        child: ListTile(
-          title: Text(
-            "Lobby $number",
-            style: const TextStyle(
+        child: Card(
+          elevation: 20.0,
+          child: ListTile(
+              title: Text(
+                "Lobby $number",
+                style: const TextStyle(
+                    color: Colors.blue,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold
+                ),
+              ),
+              isThreeLine: true,
+              subtitle: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: Text("number of player : $numberofplayer"),
+                ),
+              ),
+              trailing: Container(
+                width: width * 0.3,
                 color: Colors.blue,
-                fontSize: 20
-            ),
-          ),
-          isThreeLine: true,
-          subtitle: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Center(
-              child: Text("number of player : $numberofplayer"),
-            ),
-          ),
-          trailing: SizedBox(
-            width: width * 0.45,
-            child: Row(
-              children: [
-                Container(
-                  color: Colors.blue,
-                  child: TextButton(
-                    child: const Text("Delete", style: TextStyle(color: Colors.white)),
-                    onPressed: () {
-                      game.send("onDeletelobby", "$index");
-                    },
-                  ),
+                child: TextButton(
+                  child: const Text("Join", style: TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    game.send("onjoinlobby", "$index");
+                  },
                 ),
-                const SizedBox(
-                  width: 20,
-                ),
-                Container(
-                  color: Colors.blue,
-                  child: TextButton(
-                    child: const Text("Join", style: TextStyle(color: Colors.white)),
-                    onPressed: () {
-                      game.send("onjoinlobby", "$index");
-                    },
-                  ),
-                )
-              ],
-            )
-          )
+              )
+          ),
         )
       );
     }).toList();
