@@ -95,6 +95,7 @@ class Poker{
         this.replaceIndexesLobbies();
         this.broadcastLobbiesList();
         this.sendChangesInLobbies();
+        this.sendChangesInLobbies();
     }
     onJoinLobby(player, index){
         if(!this.lobbies.some((lobbyIn) => lobbyIn.players.some((playerIn) => playerIn.id === player.id))){
@@ -130,6 +131,7 @@ class Poker{
 
         this.broadcastLobbiesList();
         this.broadcastPlayersInLobbiesList(indexLobby);
+        this.sendChangesInLobbies();
     }
 
     broadcastPlayersList(){
@@ -152,13 +154,13 @@ class Poker{
     }
     broadcastLobbiesList(){
 
-        /*this.lobbies.forEach(function(lobby, index) {
+        this.lobbies.forEach((lobby, index, array) => {
             if(lobby.players.length === 0){
-                this.lobbies.splice(index, 1);
+                this.popLobby(lobby);
             }
         })
         this.replaceIndexesLobbies();
-        * */
+        this.sendChangesInLobbies();
 
         let lobbies = []
 
@@ -225,6 +227,7 @@ class Poker{
                     action: "onIndexChanged",
                     data: index
                 });
+                player.connection.sendUTF(message);
             });
         });
     }
