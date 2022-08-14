@@ -19,7 +19,7 @@ class Player{
     constructor(id, connection) {
         this.id = id;
         this.connection = connection;
-        this.name = "player";
+        this.name = "";
         this.index = undefined;
         this.indexInLobby = undefined;
         this.indexLobby = undefined;
