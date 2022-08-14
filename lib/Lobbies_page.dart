@@ -81,10 +81,8 @@ class LobbiesPageState extends State<LobbiesPage>{
       int numberofplayer = lobby["numberOfPlayer"] as int;
       int number = index + 1;
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 30),
-        child: Card(
-          margin: EdgeInsets.symmetric(horizontal: width * 0.05),
+      return Card(
+          margin: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.04),
           elevation: 20.0,
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: height * 0.03),
@@ -116,7 +114,6 @@ class LobbiesPageState extends State<LobbiesPage>{
                 )
             ),
           )
-        )
       );
     }).toList();
 
