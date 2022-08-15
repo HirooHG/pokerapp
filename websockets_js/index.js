@@ -23,6 +23,8 @@ class Player{
         this.index = undefined;
         this.indexInLobby = undefined;
         this.indexLobby = undefined;
+        this.cards = undefined;
+        this.total = undefined;
     }
     getId(){
         return {name: this.name, id: this.id};
@@ -132,6 +134,14 @@ class Poker{
         this.broadcastLobbiesList();
         this.broadcastPlayersInLobbiesList(indexLobby);
         this.sendChangesInLobbies();
+    }
+    onGameBegin(index){
+        let lobby = this.lobbies.at(Number(index));
+        lobby.players.forEach((player) => {
+            player.connection.sendUTF(JSON.stringify({"action" : "onGameBegin", "data" : ""}));
+        });
+
+        //Set all cards and other things
     }
 
     broadcastPlayersList(){
@@ -268,6 +278,9 @@ wsServer.on('request', function(request) {
                 break;
             case "onEnterLobby":
                 poker.broadcastPlayersInLobbiesList(message.data);
+                break;
+            case "onGameBegin":
+                poker.onGameBegin(message.data);
                 break;
         }
     });

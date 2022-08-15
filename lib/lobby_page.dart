@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'Lobbies_page.dart';
 import 'game_communication.dart';
+import 'Field_page.dart';
 
 class LobbyPage extends StatefulWidget{
   const LobbyPage({super.key, required this.index});
@@ -43,6 +43,9 @@ class _LobbyPageState extends State<LobbyPage>{
         index = message["data"] as int;
         setState(() {});
         break;
+      case "onGameBegin":
+        Navigator.push(context, MaterialPageRoute(builder: (context) => FieldPage(playerList: playersList)));
+        break;
     }
   }
 
@@ -76,20 +79,35 @@ class _LobbyPageState extends State<LobbyPage>{
       body: Column(
         children: [
           SizedBox(
-            height: height * 0.3,
+            height: height * 0.25,
             child: Center(
               child: Text(
                 "Lobby ${index + 1}",
                 style: const TextStyle(
-                  fontSize: 65,
+                  fontSize: 80,
                   color: Colors.blue,
                   fontWeight: FontWeight.bold
                 ),
               ),
             ),
           ),
+          SizedBox(
+            height: height * 0.55,
+            child: _playersList(),
+          ),
           Expanded(
-            child: _playersList()
+            child: TextButton(
+              onPressed: (playersList.isNotEmpty) ? () {
+                game.send("onGameBegin", "$index");
+              } : null,
+              child: const Text(
+                "Begin",
+                style: TextStyle(
+                  color: Colors.blue,
+                  fontSize: 50
+                ),
+              ),
+            ),
           )
         ],
       )
