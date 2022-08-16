@@ -24,7 +24,7 @@ class Player{
         this.indexInLobby = undefined;
         this.indexLobby = undefined;
         this.cards = undefined;
-        this.total = undefined;
+        this.total = 0;
     }
     getId(){
         return {name: this.name, id: this.id};
@@ -78,12 +78,12 @@ class Poker{
     }
 
     onClose(player){
-        this.popPlayer(player);
         this.lobbies.forEach(function(lobby){
             lobby.players.forEach(function(player1){
                 if(player.id === player1.id) lobby.popPlayer(player);
             });
         });
+        this.popPlayer(player);
         this.replaceIndexesPlayers();
 
         this.broadcastPlayersList();
@@ -273,13 +273,13 @@ wsServer.on('request', function(request) {
             case 'onDeletelobby':
                 poker.onDeleteLobby(message.data);
                 break;
-            case "onLeaveLobby":
+            case 'onLeaveLobby':
                 poker.onLeaveLobby(player, message.data);
                 break;
-            case "onEnterLobby":
+            case 'onEnterLobby':
                 poker.broadcastPlayersInLobbiesList(message.data);
                 break;
-            case "onGameBegin":
+            case 'onGameBegin':
                 poker.onGameBegin(message.data);
                 break;
         }

@@ -59,6 +59,61 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  assets:
+    - assets/cards/pique/J.jpg
+    - assets/cards/pique/6.jpg
+    - assets/cards/pique/A.jpg
+    - assets/cards/pique/9.jpg
+    - assets/cards/pique/10.jpg
+    - assets/cards/pique/Q.jpg
+    - assets/cards/pique/8.jpg
+    - assets/cards/pique/7.jpg
+    - assets/cards/pique/K.jpg
+    - assets/cards/pique/2.jpg
+    - assets/cards/pique/5.jpg
+    - assets/cards/pique/3.jpg
+    - assets/cards/pique/4.jpg
+    - assets/cards/coeur/J.jpg
+    - assets/cards/coeur/6.jpg
+    - assets/cards/coeur/A.jpg
+    - assets/cards/coeur/9.jpg
+    - assets/cards/coeur/10.jpg
+    - assets/cards/coeur/Q.jpg
+    - assets/cards/coeur/8.jpg
+    - assets/cards/coeur/7.jpg
+    - assets/cards/coeur/K.jpg
+    - assets/cards/coeur/2.jpg
+    - assets/cards/coeur/5.jpg
+    - assets/cards/coeur/3.jpg
+    - assets/cards/coeur/4.jpg
+    - assets/cards/trefles/J.jpg
+    - assets/cards/trefles/6.jpg
+    - assets/cards/trefles/A.jpg
+    - assets/cards/trefles/9.jpg
+    - assets/cards/trefles/10.jpg
+    - assets/cards/trefles/Q.jpg
+    - assets/cards/trefles/8.jpg
+    - assets/cards/trefles/7.jpg
+    - assets/cards/trefles/K.jpg
+    - assets/cards/trefles/2.jpg
+    - assets/cards/trefles/5.jpg
+    - assets/cards/trefles/3.jpg
+    - assets/cards/trefles/4.jpg
+    - assets/cards/carreau/J.jpg
+    - assets/cards/carreau/6.jpg
+    - assets/cards/carreau/A.jpg
+    - assets/cards/carreau/9.jpg
+    - assets/cards/carreau/10.jpg
+    - assets/cards/carreau/Q.jpg
+    - assets/cards/carreau/8.jpg
+    - assets/cards/carreau/7.jpg
+    - assets/cards/carreau/K.jpg
+    - assets/cards/carreau/2.jpg
+    - assets/cards/carreau/5.jpg
+    - assets/cards/carreau/3.jpg
+    - assets/cards/carreau/4.jpg
+    - assets/cards/couverture.jpg
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
