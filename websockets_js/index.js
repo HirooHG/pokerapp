@@ -27,7 +27,7 @@ class Player{
         this.total = 0;
     }
     getId(){
-        return {name: this.name, id: this.id};
+        return {name: this.name, id: this.id, total: this.total};
     }
 }
 class Lobby{
@@ -40,7 +40,7 @@ class Lobby{
     }
 }
 class Poker{
-    constructor(request) {
+    constructor() {
         this.players = [];
         this.lobbies = [];
     }
@@ -53,7 +53,6 @@ class Poker{
         this.players.splice(player.index ,1);
         this.replaceIndexesPlayers()
     }
-
     pushLobby(lobby){
         lobby.index = this.lobbies.length;
         this.lobbies.push(lobby);
@@ -62,7 +61,6 @@ class Poker{
         this.lobbies.splice(lobby.index,1);
         this.replaceIndexesLobbies();
     }
-
     pushPlayerInLobby(lobby, player){
         player.indexInLobby = lobby.players.length;
 
@@ -78,13 +76,12 @@ class Poker{
     }
 
     onClose(player){
-        this.lobbies.forEach(function(lobby){
-            lobby.players.forEach(function(player1){
-                if(player.id === player1.id) lobby.popPlayer(player);
+        this.lobbies.forEach((lobby) => {
+            lobby.players.forEach((player1) => {
+                if(player.id === player1.id) this.popPlayerInLobby(lobby, player);
             });
         });
         this.popPlayer(player);
-        this.replaceIndexesPlayers();
 
         this.broadcastPlayersList();
         this.broadcastLobbiesList();
@@ -211,6 +208,7 @@ class Poker{
         });
     }
 
+
     replaceIndexesPlayers(){
         this.players.forEach(function (player, index){
             player.index = index;
@@ -240,6 +238,9 @@ class Poker{
                 player.connection.sendUTF(message);
             });
         });
+    }
+    handOutCards(){
+
     }
 }
 
@@ -286,6 +287,6 @@ wsServer.on('request', function(request) {
     });
 
     connection.on("close", function(){
-        poker.onClose();
+        poker.onClose(player);
     });
 });

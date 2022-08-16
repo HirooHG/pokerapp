@@ -60,6 +60,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/fond.jpg
     - assets/cards/pique/J.jpg
     - assets/cards/pique/6.jpg
     - assets/cards/pique/A.jpg

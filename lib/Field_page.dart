@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'game_communication.dart';
 
+//#region cards and colors
+
 String linkAsset = "assets/cards/";
 String couverture = "couverture.jpg";
 
@@ -30,11 +32,12 @@ var blinds = [
   "SB",
   "D"
 ];
-Map<String, MaterialColor> colorBlind = {
+Map<String, Color> colorBlind = {
   "BB" : Colors.yellow,
   "SM" : Colors.red,
-  "D" : Colors.blue
+  "D" : Colors.white
 };
+//#endregion
 
 class FieldPage extends StatefulWidget{
   const FieldPage({super.key, required this.playerList});
@@ -49,16 +52,8 @@ class _FieldPageState extends State<FieldPage>{
   late double width;
   late double height;
 
-  var players = [
-    Player(),
-    Player(),
-    Player(),
-    Player(),
-    Player(),
-    Player(),
-    Player(),
-  ];
-  Me me = Me();
+  late List<Player> players;
+  Me me = Me(playerName: game.playerName);
   River river = River();
 
   @override
@@ -66,6 +61,10 @@ class _FieldPageState extends State<FieldPage>{
     super.initState();
 
     game.addListener(_onMessageReceived);
+    
+    players = [
+      for(var i in widget.playerList) if(i["name"] != game.playerName) Player(playerName: i["name"])
+    ];
   }
 
   @override
@@ -76,7 +75,10 @@ class _FieldPageState extends State<FieldPage>{
   }
 
   _onMessageReceived(message){
-
+    switch(message["action"]){
+      case "":
+        break;
+    }
   }
 
   @override
@@ -85,11 +87,15 @@ class _FieldPageState extends State<FieldPage>{
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
 
-    var coef = 0.19;
+    var coef = 0.145;
 
     return Scaffold(
       body: Container(
-        color: const Color(0xFF1F4E2E),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: Image.asset("assets/fond.jpg").image
+          )
+        ),
         height: height,
         width: width,
         child: Column(
@@ -99,49 +105,36 @@ class _FieldPageState extends State<FieldPage>{
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  players[2].plateau(width, height),
-                  players[3].plateau(width, height),
-                  players[2].plateau(width, height),
+                  (players.length >= 3) ? players[2].plateau(width, height) : River.empty(width, height),
+                  (players.length >= 4) ? players[3].plateau(width, height) : River.empty(width, height),
+                  (players.length >= 5) ? players[4].plateau(width, height) : River.empty(width, height),
                 ],
               ),
             ),
             Container(
               height: height * coef,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Transform(
-                    transform: Matrix4.rotationZ(80.11),
-                    alignment: Alignment.center,
-                    child: players[1].plateau(width, height),
-                  ),
-                  river.riverTop(width, height),
-                  Transform(
-                    transform: Matrix4.rotationZ(-80.11),
-                    alignment: Alignment.center,
-                    child: players[5].plateau(width, height),
-                  )
+                  (players.length >= 2) ? players[1].plateau(width, height) : River.empty(width, height),
+                  (players.length >= 6) ? players[5].plateau(width, height) : River.empty(width, height),
                 ],
               ),
             ),
             Container(
               height: height * coef,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Transform(
-                    transform: Matrix4.rotationZ(80.11),
-                    alignment: Alignment.center,
-                    child: players[0].plateau(width, height),
-                  ),
-                  river.riverBot(width, height),
-                  Transform(
-                    transform: Matrix4.rotationZ(-80.11),
-                    alignment: Alignment.center,
-                    child: players[6].plateau(width, height),
-                  )
+                  (players.isNotEmpty) ? players[0].plateau(width, height) : River.empty(width, height),
+                  (players.length >= 7) ? players[6].plateau(width, height) : River.empty(width, height),
                 ],
               ),
+            ),
+            Container(
+              height: height * 0.2,
+              width: width,
+              child: river.river(width, height),
             ),
             Expanded(
               child: me.plateau(width, height)
@@ -155,13 +148,19 @@ class _FieldPageState extends State<FieldPage>{
 
 class Player{
 
+  Player({required this.playerName});
+
   int mise = 10;
   int total = 2000;
+  final String playerName;
+  late String blind;
 
   Widget plateau(double width, double height){
 
     var widthBox = width * 0.25;
     var heightBox = height * 0.15;
+
+    blind = blinds[2];
 
     return Container(
       //color: Colors.red,
@@ -171,23 +170,42 @@ class Player{
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           Text(
-            total.toString(),
+            playerName,
             style: const TextStyle(
               fontWeight: FontWeight.bold
             ),
           ),
           Row(
             children: [
-              Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthBox / 2, height: heightBox / 2),
-              Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthBox / 2, height: heightBox / 2)
+              Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthBox / 2.55, height: heightBox / 2.55),
+              Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthBox / 2.55, height: heightBox / 2.55),
+              Text(
+                blind,
+                style: TextStyle(
+                  color: colorBlind[blind]
+                ),
+              )
             ],
           ),
-          Text(
-            mise.toString(),
-            style: const TextStyle(
-                fontWeight: FontWeight.bold
-            ),
-          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                mise.toString(),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.red.shade100
+                ),
+              ),
+              Text(
+                total.toString(),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple.shade600
+                ),
+              ),
+            ],
+          )
         ],
       )
     );
@@ -195,8 +213,15 @@ class Player{
 }
 class Me extends Player{
 
+  Me({required super.playerName});
+
   @override
   Widget plateau(double width, double height){
+
+    blind = blinds[2];
+    double sizeBoxX = width * 0.35;
+    double sizeBoxY = height * 0.25;
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -205,15 +230,15 @@ class Me extends Player{
           children: [
             Container(
               decoration: BoxDecoration(
-                color: colorBlind["BB"],
+                color: colorBlind[blind],
                 borderRadius: BorderRadius.circular(100),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text(
-                  blinds[0],
-                  style: const TextStyle(
-                    color: Colors.grey,
+                  blinds[2],
+                  style: TextStyle(
+                    color: Colors.grey.shade200,
                     fontSize: 20,
                     fontWeight: FontWeight.bold
                   ),
@@ -252,15 +277,15 @@ class Me extends Player{
             children: [
               Row(
                 children: [
-                  Image.asset(linkAsset + trefle + cards[0], fit: BoxFit.fill, width: 150, height: 200),
-                  Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: 150, height: 200)
+                  Image.asset(linkAsset + trefle + cards[0], fit: BoxFit.fill, width: sizeBoxX, height: sizeBoxY),
+                  Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: sizeBoxX, height: sizeBoxY)
                 ],
               ),
               SizedBox(
                 child: Text(
                   total.toString(),
-                  style: const TextStyle(
-                      color: Colors.blue,
+                  style: TextStyle(
+                      color: Colors.green.shade900,
                       fontSize: 30,
                       fontWeight: FontWeight.bold
                   ),
@@ -275,32 +300,114 @@ class Me extends Player{
 }
 class River{
 
-  Widget riverTop(double width, double height){
+  Widget river(double width, double height){
 
     var widthImage = width * 0.15;
     var heightImage = height * 0.12;
+    Color color = Colors.green.shade900;
+    var cards = [
+      Container(),
+      Container(),
+      Container(),
+      Container(),
+      Container(),
+    ];
 
     return Container(
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthImage, height: heightImage),
-          Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthImage, height: heightImage),
-          Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthImage, height: heightImage),
+          Container(
+            width: widthImage,
+            height: heightImage,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border(
+                top: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                left: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                bottom: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                right: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+              ),
+            ),
+            child: cards[0],
+          ),
+          Container(
+            width: widthImage,
+            height: heightImage,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border(
+                top: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                left: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                bottom: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                right: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+              ),
+            ),
+            child: cards[1],
+          ),
+          Container(
+            width: widthImage,
+            height: heightImage,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border(
+                top: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                left: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                bottom: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                right: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+              ),
+            ),
+            child: cards[2],
+          ),
+          Container(
+            width: widthImage,
+            height: heightImage,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border(
+                top: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                left: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                bottom: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                right: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+              ),
+            ),
+            child: cards[3],
+          ),
+          Container(
+            width: widthImage,
+            height: heightImage,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border(
+                top: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                left: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                bottom: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+                right: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+              ),
+            ),
+            child: cards[4],
+          ),
         ],
       ),
     );
   }
-  Widget riverBot(double width, double height){
+  static Widget empty(double width, double height){
 
-    var widthImage = width * 0.14;
-    var heightImage = height * 0.12;
+    var widthImage = width * 0.25;
+    var heightImage = height * 0.09;
+    Color color = Colors.red.shade300;
 
     return Container(
-      child: Row(
-        children: [
-          Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthImage, height: heightImage),
-          Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthImage, height: heightImage),
-        ],
+      width: widthImage,
+      height: heightImage,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border(
+          top: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+          left: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+          bottom: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+          right: BorderSide(color: color, width: 2, style: BorderStyle.solid),
+        ),
       ),
     );
   }
