@@ -61,6 +61,7 @@ flutter:
 
   assets:
     - assets/fond.jpg
+    - assets/tapi.png
     - assets/cards/pique/J.jpg
     - assets/cards/pique/6.jpg
     - assets/cards/pique/A.jpg

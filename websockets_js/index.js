@@ -33,16 +33,39 @@ class Player{
 class Lobby{
     constructor() {
         this.players = [];
+        this.isClosed = false;
         this.index = undefined;
     }
     getJson(){
-        return {index: this.index, numberOfPlayer: this.players.length};
+        return {index: this.index, numberOfPlayer: this.players.length, isClosed: this.isClosed};
     }
 }
 class Poker{
+
     constructor() {
         this.players = [];
         this.lobbies = [];
+        this.cards = [
+          "A",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "J",
+          "Q",
+          "K"
+        ];
+        this.types = [
+          "pique",
+          "trefles",
+          "coeur",
+          "carreau"
+        ];
     }
 
     pushPlayer(player){
@@ -133,12 +156,37 @@ class Poker{
         this.sendChangesInLobbies();
     }
     onGameBegin(index){
+        index = Number(index);
+
         let lobby = this.lobbies.at(Number(index));
+        lobby.isClosed = true;
         lobby.players.forEach((player) => {
             player.connection.sendUTF(JSON.stringify({"action" : "onGameBegin", "data" : ""}));
         });
+        this.broadcastLobbiesList();
+    }
+    onEnterGame(index){
+        index = Number(index);
 
-        //Set all cards and other things
+        this.handOutCards(index);
+    }
+    onLeaveGame(player, index){
+        let indexPlayer = player.indexInLobby;
+        let lobby = this.lobbies[index];
+
+        player.cards = undefined;
+        player.indexInLobby = undefined;
+        player.indexLobby = undefined;
+
+        this.popPlayerInLobby(lobby, player);
+
+        lobby.players.forEach((playerIn) => {
+            playerIn.connection.sendUTF(JSON.stringify({"action": "onPlayerLeft", "data" : indexPlayer}));
+        });
+
+        player.connection.sendUTF(JSON.stringify({"action" : "onPlayerLeaveLobby"}));
+
+        this.broadcastLobbiesList();
     }
 
     broadcastPlayersList(){
@@ -185,7 +233,6 @@ class Poker{
         });
     }
     broadcastPlayersInLobbiesList(indexLobby){
-        //onPlayerListInLobby
 
         let playersList = [];
         let index = Number(indexLobby);
@@ -207,7 +254,6 @@ class Poker{
             }
         });
     }
-
 
     replaceIndexesPlayers(){
         this.players.forEach(function (player, index){
@@ -239,8 +285,65 @@ class Poker{
             });
         });
     }
-    handOutCards(){
+    getRndInteger(min, max) {
+        return Math.floor(Math.random() * (max - min) ) + min;
+    }
+    verifSameCards(cardOne, cardTwo, lobby){
 
+        let isSame = false;
+        lobby.players.forEach((player) => {
+            if(player.cards !== undefined){
+                if(player.cards[0][0] === cardOne[0] && player.cards[0][1] === cardOne[1] || player.cards[1][0] === cardTwo[1] && player.cards[1][1] === cardTwo[1]){
+                    isSame = true;
+                }
+            }
+        });
+        return isSame;
+    }
+    handOutCards(index){
+        let lobby = this.lobbies[index];
+        lobby.players.forEach((player) => {
+
+            let typeOne;
+            let cardOne;
+            let typeTwo;
+            let cardTwo;
+
+            let cardTypeOne;
+            let cardTypeTwo;
+
+            do{
+                typeOne = this.types[this.getRndInteger(0, this.types.length)];
+                cardOne = this.cards[this.getRndInteger(0, this.cards.length)];
+
+                typeTwo = this.types[this.getRndInteger(0, this.types.length)];
+                cardTwo = this.cards[this.getRndInteger(0, this.cards.length)];
+
+                cardTypeOne = [
+                    typeOne,
+                    cardOne
+                ];
+                cardTypeTwo = [
+                    typeTwo,
+                    cardTwo
+                ];
+            }while (cardOne !== cardTwo && typeOne !== typeTwo || this.verifSameCards(cardTypeOne, cardTypeTwo, lobby));
+
+            let message = JSON.stringify(
+                {
+                        "action" : "onHandOutCards",
+                    "data" : {
+                        "cardOne": cardTypeOne,
+                        "cardTwo": cardTypeTwo
+                    }
+                }
+            );
+            player.cards = [
+                cardOne,
+                cardTwo
+            ];
+            player.connection.sendUTF(message);
+        });
     }
 }
 
@@ -282,6 +385,12 @@ wsServer.on('request', function(request) {
                 break;
             case 'onGameBegin':
                 poker.onGameBegin(message.data);
+                break;
+            case 'onEnterGame':
+                poker.onEnterGame(message.data);
+                break;
+            case 'onLeaveGame':
+                poker.onLeaveGame(player, message.data);
                 break;
         }
     });

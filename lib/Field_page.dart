@@ -2,16 +2,41 @@
 import 'package:flutter/material.dart';
 import 'game_communication.dart';
 
+Future<void> popup({String? title = "", String? text = "", required BuildContext context}) async{
+
+  await showDialog<void>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text(title!),
+        content: Text(
+          text!,
+          style: const TextStyle(
+              color: Colors.blue,
+              fontWeight: FontWeight.bold,
+              fontSize: 15
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('OK'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 //#region cards and colors
-
-String linkAsset = "assets/cards/";
-String couverture = "couverture.jpg";
-
-var trefle = "trefles/";
-var carreau = "carreau/";
-var coeur = "coeur/";
-var pique = "pique/";
-
+var linkAsset = "assets/cards/";
+var couverture = "couverture.jpg";
+var trefle = "trefles";
+var carreau = "carreau";
+var coeur = "coeur";
+var pique = "pique";
 var cards = [
   "A.jpg",
   "2.jpg",
@@ -32,17 +57,18 @@ var blinds = [
   "SB",
   "D"
 ];
-Map<String, Color> colorBlind = {
+var colorBlind = {
   "BB" : Colors.yellow,
   "SM" : Colors.red,
   "D" : Colors.white
 };
 //#endregion
 
-class FieldPage extends StatefulWidget{
-  const FieldPage({super.key, required this.playerList});
+class FieldPage extends StatefulWidget {
+  const FieldPage({super.key, required this.playerList, required this.index});
 
   final List<dynamic> playerList;
+  final int index;
 
   @override
   State<FieldPage> createState() => _FieldPageState();
@@ -51,32 +77,60 @@ class _FieldPageState extends State<FieldPage>{
 
   late double width;
   late double height;
+  late int index;
+  dynamic cardOne;
+  dynamic cardTwo;
 
   late List<Player> players;
-  Me me = Me(playerName: game.playerName);
+  late Me me;
   River river = River();
 
   @override
   void initState(){
     super.initState();
 
+    me = Me(playerName: game.playerName);
+
     game.addListener(_onMessageReceived);
+    index = widget.index;
     
     players = [
       for(var i in widget.playerList) if(i["name"] != game.playerName) Player(playerName: i["name"])
     ];
+    game.send("onEnterGame", "$index");
   }
-
   @override
   void dispose(){
     game.removeListener(_onMessageReceived);
+    game.send("onLeaveGame", "$index");
 
     super.dispose();
   }
 
   _onMessageReceived(message){
     switch(message["action"]){
-      case "":
+      case "onHandOutCards":
+
+        cardOne = message["data"]["cardOne"];
+        cardTwo = message["data"]["cardTwo"];
+        var linkOne = "$linkAsset${cardOne[0]}/${cardOne[1]}.jpg";
+        var linkTwo = "$linkAsset${cardTwo[0]}/${cardTwo[1]}.jpg";
+        me.getCards(linkOne, linkTwo);
+
+        setState(() {
+
+        });
+        break;
+
+      case "onPlayerLeft":
+        var indexPlayer = message["data"] as int;
+        players.removeAt(indexPlayer);
+        widget.playerList.removeAt(indexPlayer);
+        //popup(context: context, text: "yay");
+
+        setState(() {
+
+        });
         break;
     }
   }
@@ -93,14 +147,15 @@ class _FieldPageState extends State<FieldPage>{
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: Image.asset("assets/fond.jpg").image
+            image: Image.asset("assets/tapi.png").image,
+            fit: BoxFit.cover
           )
         ),
         height: height,
         width: width,
         child: Column(
           children: [
-            Container(
+            SizedBox(
               height: height * coef,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -111,7 +166,7 @@ class _FieldPageState extends State<FieldPage>{
                 ],
               ),
             ),
-            Container(
+            SizedBox(
               height: height * coef,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -121,7 +176,7 @@ class _FieldPageState extends State<FieldPage>{
                 ],
               ),
             ),
-            Container(
+            SizedBox(
               height: height * coef,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -131,7 +186,7 @@ class _FieldPageState extends State<FieldPage>{
                 ],
               ),
             ),
-            Container(
+            SizedBox(
               height: height * 0.2,
               width: width,
               child: river.river(width, height),
@@ -172,7 +227,9 @@ class Player{
           Text(
             playerName,
             style: const TextStyle(
-              fontWeight: FontWeight.bold
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 18
             ),
           ),
           Row(
@@ -182,7 +239,8 @@ class Player{
               Text(
                 blind,
                 style: TextStyle(
-                  color: colorBlind[blind]
+                  color: colorBlind[blind],
+                  fontWeight: FontWeight.bold
                 ),
               )
             ],
@@ -199,9 +257,9 @@ class Player{
               ),
               Text(
                 total.toString(),
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.purple.shade600
+                  color: Colors.green
                 ),
               ),
             ],
@@ -213,7 +271,18 @@ class Player{
 }
 class Me extends Player{
 
-  Me({required super.playerName});
+  late String linkCardOne;
+  late String linkCardTwo;
+
+  Me({required super.playerName}){
+    linkCardOne = linkAsset + couverture;
+    linkCardTwo = linkAsset + couverture;
+  }
+
+  getCards(String a, String b){
+    linkCardOne = a;
+    linkCardTwo = b;
+  }
 
   @override
   Widget plateau(double width, double height){
@@ -277,15 +346,15 @@ class Me extends Player{
             children: [
               Row(
                 children: [
-                  Image.asset(linkAsset + trefle + cards[0], fit: BoxFit.fill, width: sizeBoxX, height: sizeBoxY),
-                  Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: sizeBoxX, height: sizeBoxY)
+                  Image.asset(linkCardOne, fit: BoxFit.fill, width: sizeBoxX, height: sizeBoxY),
+                  Image.asset(linkCardTwo, fit: BoxFit.fill, width: sizeBoxX, height: sizeBoxY),
                 ],
               ),
               SizedBox(
                 child: Text(
                   total.toString(),
-                  style: TextStyle(
-                      color: Colors.green.shade900,
+                  style: const TextStyle(
+                      color: Colors.green,
                       fontSize: 30,
                       fontWeight: FontWeight.bold
                   ),
@@ -304,7 +373,7 @@ class River{
 
     var widthImage = width * 0.15;
     var heightImage = height * 0.12;
-    Color color = Colors.green.shade900;
+    Color color = Colors.green;
     var cards = [
       Container(),
       Container(),
@@ -398,17 +467,7 @@ class River{
     Color color = Colors.red.shade300;
 
     return Container(
-      width: widthImage,
-      height: heightImage,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border(
-          top: BorderSide(color: color, width: 2, style: BorderStyle.solid),
-          left: BorderSide(color: color, width: 2, style: BorderStyle.solid),
-          bottom: BorderSide(color: color, width: 2, style: BorderStyle.solid),
-          right: BorderSide(color: color, width: 2, style: BorderStyle.solid),
-        ),
-      ),
+
     );
   }
 }

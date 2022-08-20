@@ -15,6 +15,7 @@ class _LobbyPageState extends State<LobbyPage>{
   late int index;
   late double width;
   late double height;
+  bool isLeaving = false;
 
   List<dynamic> playersList = <dynamic>[];
 
@@ -28,9 +29,10 @@ class _LobbyPageState extends State<LobbyPage>{
   }
   @override
   void dispose(){
-    super.dispose();
     game.removeListener(_onMessageReceived);
-    game.send("onLeaveLobby", "$index");
+    if(!isLeaving) game.send("onLeaveLobby", "$index");
+
+    super.dispose();
   }
 
   _onMessageReceived(message){
@@ -44,7 +46,11 @@ class _LobbyPageState extends State<LobbyPage>{
         setState(() {});
         break;
       case "onGameBegin":
-        Navigator.push(context, MaterialPageRoute(builder: (context) => FieldPage(playerList: playersList)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => FieldPage(playerList: playersList, index: index)));
+        break;
+      case "onPlayerLeaveLobby":
+        isLeaving = true;
+        Navigator.pop(context);
         break;
     }
   }

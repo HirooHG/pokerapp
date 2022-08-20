@@ -77,9 +77,10 @@ class LobbiesPageState extends State<LobbiesPage>{
     if(lobbiesList.isEmpty) return Container();
 
     List<Widget> children = lobbiesList.map((lobby) {
+      int numberOfPlayer = lobby["numberOfPlayer"] as int;
       int index = lobby["index"] as int;
-      int numberofplayer = lobby["numberOfPlayer"] as int;
       int number = index + 1;
+      bool isClosed = lobby["isClosed"];
 
       return Card(
           margin: EdgeInsets.symmetric(horizontal: width * 0.05, vertical: height * 0.04),
@@ -99,13 +100,22 @@ class LobbiesPageState extends State<LobbiesPage>{
                 subtitle: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   child: Center(
-                    child: Text("number of player : $numberofplayer"),
+                    child: Text("number of player : $numberOfPlayer"),
                   ),
                 ),
                 trailing: Container(
                   width: width * 0.3,
                   color: Colors.blue,
-                  child: TextButton(
+                  child: (isClosed) ? const Center(
+                    child: Text(
+                      "Closed",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20
+                      )
+                    ),
+                  ) : TextButton(
                     child: const Text("Join", style: TextStyle(color: Colors.white)),
                     onPressed: () {
                       game.send("onjoinlobby", "$index");
