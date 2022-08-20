@@ -3,7 +3,7 @@ import 'package:web_socket_channel/io.dart';
 
 WebSocketsNotifications sockets = WebSocketsNotifications();
 
-const String _serverAdress = "ws://192.168.43.238:34264";
+const String _serverAdress = "ws://192.168.8.16:34264";
 
 class WebSocketsNotifications {
   static final WebSocketsNotifications _sockets = WebSocketsNotifications._internal();
