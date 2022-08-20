@@ -11,9 +11,11 @@ class GameCommunication {
 
   String _playerName = "";
   String _playerID = "";
+  int _playerTotal = 0;
 
   String get playerName => _playerName;
   String get playerId => _playerID;
+  int get playerTotal => _playerTotal;
 
   factory GameCommunication(){
     return _game;
@@ -30,6 +32,7 @@ class GameCommunication {
     switch(message["action"]){
       case 'connect':
         _playerID = message["data"];
+        _playerTotal = message["total"] as int;
         break;
 
       default:

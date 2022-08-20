@@ -53,9 +53,9 @@ var cards = [
   "K.jpg"
 ];
 var blinds = [
-  "BB",
+  "D",
   "SB",
-  "D"
+  "BB",
 ];
 var colorBlind = {
   "BB" : Colors.yellow,
@@ -75,27 +75,25 @@ class FieldPage extends StatefulWidget {
 }
 class _FieldPageState extends State<FieldPage>{
 
+  late List<Player> players;
   late double width;
   late double height;
   late int index;
   dynamic cardOne;
   dynamic cardTwo;
 
-  late List<Player> players;
-  late Me me;
-  River river = River();
+  var me = Me(playerName: game.playerName, total: game.playerTotal);
+  var river = River();
 
   @override
   void initState(){
     super.initState();
 
-    me = Me(playerName: game.playerName);
-
     game.addListener(_onMessageReceived);
     index = widget.index;
     
     players = [
-      for(var i in widget.playerList) if(i["name"] != game.playerName) Player(playerName: i["name"])
+      for(var i in widget.playerList) if(i["name"] != game.playerName) Player(playerName: i["name"], total: i["total"])
     ];
     game.send("onEnterGame", "$index");
   }
@@ -110,13 +108,11 @@ class _FieldPageState extends State<FieldPage>{
   _onMessageReceived(message){
     switch(message["action"]){
       case "onHandOutCards":
-
         cardOne = message["data"]["cardOne"];
         cardTwo = message["data"]["cardTwo"];
         var linkOne = "$linkAsset${cardOne[0]}/${cardOne[1]}.jpg";
         var linkTwo = "$linkAsset${cardTwo[0]}/${cardTwo[1]}.jpg";
         me.getCards(linkOne, linkTwo);
-
         setState(() {
 
         });
@@ -126,8 +122,16 @@ class _FieldPageState extends State<FieldPage>{
         var indexPlayer = message["data"] as int;
         players.removeAt(indexPlayer);
         widget.playerList.removeAt(indexPlayer);
-        //popup(context: context, text: "yay");
+        setState(() {
 
+        });
+        break;
+
+      case "onReceiveBlind":
+        me.blind = message["data"];
+        break;
+
+      case "onReceiveBlindAll":
         setState(() {
 
         });
@@ -203,10 +207,10 @@ class _FieldPageState extends State<FieldPage>{
 
 class Player{
 
-  Player({required this.playerName});
+  Player({required this.playerName, required this.total});
 
-  int mise = 10;
-  int total = 2000;
+  int mise = 0;
+  int total;
   final String playerName;
   late String blind;
 
@@ -274,7 +278,7 @@ class Me extends Player{
   late String linkCardOne;
   late String linkCardTwo;
 
-  Me({required super.playerName}){
+  Me({required super.playerName, required super.total}){
     linkCardOne = linkAsset + couverture;
     linkCardTwo = linkAsset + couverture;
   }

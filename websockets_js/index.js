@@ -20,11 +20,12 @@ class Player{
         this.id = id;
         this.connection = connection;
         this.name = "";
+        this.total = 0;
+
         this.index = undefined;
         this.indexInLobby = undefined;
         this.indexLobby = undefined;
         this.cards = undefined;
-        this.total = 0;
     }
     getId(){
         return {name: this.name, id: this.id, total: this.total};
@@ -65,6 +66,11 @@ class Poker{
           "trefles",
           "coeur",
           "carreau"
+        ];
+        this.blinds = [
+          "D",
+          "SB",
+          "BB",
         ];
     }
 
@@ -169,6 +175,7 @@ class Poker{
         index = Number(index);
 
         this.handOutCards(index);
+        this.handOutBlinds(index);
     }
     onLeaveGame(player, index){
         let indexPlayer = player.indexInLobby;
@@ -285,9 +292,6 @@ class Poker{
             });
         });
     }
-    getRndInteger(min, max) {
-        return Math.floor(Math.random() * (max - min) ) + min;
-    }
     verifSameCards(cardOne, cardTwo, lobby){
 
         let isSame = false;
@@ -345,6 +349,44 @@ class Poker{
             player.connection.sendUTF(message);
         });
     }
+    handOutBlinds(index){
+        index = Number(index);
+        let lobby = this.lobbies[index];
+
+        switch (lobby.players.length){
+            case 1:
+                lobby.players[0].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0]});
+                break;
+            case 2:
+                lobby.players[0].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0]});
+                lobby.players[1].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1]});
+                break;
+            case 3:
+                lobby.players[0].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0]});
+                lobby.players[1].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1]});
+                lobby.players[2].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[2]});
+                break;
+            default:
+                let dealer = this.getRndInteger(0, lobby.players.length);
+                let smallBlind = (dealer + 1 >= lobby.players.length) ? 0 : dealer + 1;
+                let bigBlind = (smallBlind + 1 >= lobby.players.length) ? 0 : smallBlind + 1;
+                let tab = [
+                    dealer,
+                    smallBlind,
+                    bigBlind
+                ];
+
+                lobby.players[dealer].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0]});
+                lobby.players[smallBlind].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1]});
+                lobby.players[bigBlind].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[2]});
+
+                lobby.players.forEach((player, index) => lobby.players[index].connection.sendUTF({"action" : "onReceiveBlindOther"}));
+                break;
+        }
+    }
+    getRndInteger(min, max) {
+        return Math.floor(Math.random() * (max - min) ) + min;
+    }
 }
 
 const poker = new Poker();
@@ -356,7 +398,7 @@ wsServer.on('request', function(request) {
 
     poker.pushPlayer(player);
 
-    connection.sendUTF(JSON.stringify({action: 'connect', data: player.id}));
+    connection.sendUTF(JSON.stringify({action: 'connect', data: player.id, total: player.total}));
 
     connection.on('message', function(data) {
 
