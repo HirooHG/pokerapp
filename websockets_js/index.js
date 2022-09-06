@@ -74,7 +74,8 @@ class Poker{
           "SB",
           "BB",
         ];
-        this.miseTotal = undefined;
+        this.playerBlinds = undefined;
+        this.miseTotal = 0;
     }
 
     pushPlayer(player){
@@ -180,7 +181,7 @@ class Poker{
         this.handOutCards(index);
 
         //not tested yet
-        let blinds = this.handOutBlinds(index);
+        this.handOutBlinds(index);
     }
     onLeaveGame(player, index){
         let indexPlayer = player.indexInLobby;
@@ -357,15 +358,21 @@ class Poker{
     handOutBlinds(index){
         index = Number(index);
         let lobby = this.lobbies[index];
-        let blinds;
-        let dealer = null;
-        let smallBlind = null;
-        let bigBlind = null;
+        let dealer;
+        let smallBlind;
+        let bigBlind;
 
         switch (lobby.players.length){
+            case 1:
+                dealer = lobby.players[0];
+                dealer.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0})); //{"action" : 0, "data" : this.blinds[0], "mise": 0}
+                break;
             case 2:
-                lobby.players[0].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0});
-                lobby.players[1].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2});
+                dealer = lobby.players[0];
+                smallBlind = lobby.players[1];
+
+                dealer.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0}));
+                smallBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2}));
                 break;
             case 3:
 
@@ -373,9 +380,9 @@ class Poker{
                 smallBlind = lobby.players[1];
                 bigBlind = lobby.players[2];
 
-                dealer.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0});
-                smallBlind.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2});
-                bigBlind.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[2], "mise": 4});
+                dealer.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0}));
+                smallBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2}));
+                bigBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[2], "mise": 4}));
 
                 dealer.blind = this.blinds[0];
                 smallBlind.blind = this.blinds[2];
@@ -390,24 +397,20 @@ class Poker{
                 smallBlind = lobby.players[smallBlindInt];
                 bigBlind = lobby.players[bigBlindInt];
 
-                dealer.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0});
-                smallBlind.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2});
-                bigBlind.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[2], "mise": 4});
-
-                lobby.players.forEach((player) => player.connection.sendUTF({"action" : "onReceiveBlindAll"}));
+                dealer.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0}));
+                smallBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2}));
+                bigBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[2], "mise": 4}));
                 break;
         }
-        blinds = {
+        this.blinds = {
             "dealer" : dealer,
             "smallBlind" : smallBlind,
             "bigBlind": bigBlind
         };
 
-        if(dealer != null) dealer.mise = 0;
+        dealer.mise = 0;
         if(smallBlind != null) smallBlind.mise = 2;
         if(bigBlind != null) bigBlind.mise = 4;
-
-        return blinds;
     }
     getRndInteger(min, max) {
         return Math.floor(Math.random() * (max - min) ) + min;

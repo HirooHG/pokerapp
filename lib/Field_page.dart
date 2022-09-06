@@ -125,12 +125,11 @@ class _FieldPageState extends State<FieldPage>{
         break;
 
       case "onReceiveBlind":
-        me.blind = message["data"];
-        me.mise = message["mise"] as int;
-        break;
-
-      case "onReceiveBlindAll":
-        setState(() {});
+        var blind = message["data"] as String;
+        var mise = message["mise"] as int;
+        me.getMiseBlind(mise: mise, blind: blind);
+        //setState(() {});
+        print("${me.blind} ${me.mise}");
         break;
     }
   }
@@ -203,12 +202,20 @@ class _FieldPageState extends State<FieldPage>{
 
 class Player{
 
-  Player({required this.playerName, required this.total});
-
-  int mise = 0;
+  late int mise;
+  late String blind;
   int total;
   final String playerName;
-  String blind = "";
+
+  Player({required this.playerName, required this.total}){
+    mise = 0;
+    blind = "";
+  }
+
+  getMiseBlind({mise, blind}){
+    this.mise = mise;
+    this.blind = blind;
+  }
 
   Widget plateau(double width, double height){
 
@@ -300,7 +307,7 @@ class Me extends Player{
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text(
-                  blinds[2],
+                  blind,
                   style: TextStyle(
                     color: Colors.grey.shade200,
                     fontSize: 20,
