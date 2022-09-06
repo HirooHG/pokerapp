@@ -81,6 +81,7 @@ class _FieldPageState extends State<FieldPage>{
   late int index;
   dynamic cardOne;
   dynamic cardTwo;
+  var miseTotal = 0;
 
   var me = Me(playerName: game.playerName, total: game.playerTotal);
   var river = River();
@@ -113,28 +114,23 @@ class _FieldPageState extends State<FieldPage>{
         var linkOne = "$linkAsset${cardOne[0]}/${cardOne[1]}.jpg";
         var linkTwo = "$linkAsset${cardTwo[0]}/${cardTwo[1]}.jpg";
         me.getCards(linkOne, linkTwo);
-        setState(() {
-
-        });
+        setState(() {});
         break;
 
       case "onPlayerLeft":
         var indexPlayer = message["data"] as int;
         players.removeAt(indexPlayer);
         widget.playerList.removeAt(indexPlayer);
-        setState(() {
-
-        });
+        setState(() {});
         break;
 
       case "onReceiveBlind":
         me.blind = message["data"];
+        me.mise = message["mise"] as int;
         break;
 
       case "onReceiveBlindAll":
-        setState(() {
-
-        });
+        setState(() {});
         break;
     }
   }
@@ -212,17 +208,14 @@ class Player{
   int mise = 0;
   int total;
   final String playerName;
-  late String blind;
+  String blind = "";
 
   Widget plateau(double width, double height){
 
     var widthBox = width * 0.25;
     var heightBox = height * 0.15;
 
-    blind = blinds[2];
-
-    return Container(
-      //color: Colors.red,
+    return SizedBox(
       width: widthBox,
       height: heightBox,
       child: Column(
@@ -290,8 +283,6 @@ class Me extends Player{
 
   @override
   Widget plateau(double width, double height){
-
-    blind = blinds[2];
     double sizeBoxX = width * 0.35;
     double sizeBoxY = height * 0.25;
 

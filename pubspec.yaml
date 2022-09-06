@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   rename_app: ^1.1.0
   web_socket_channel: ^2.2.0
+  connectivity: ^3.0.6
 
 dev_dependencies:
   flutter_test:

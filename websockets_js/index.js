@@ -26,6 +26,8 @@ class Player{
         this.indexInLobby = undefined;
         this.indexLobby = undefined;
         this.cards = undefined;
+        this.blind = undefined;
+        this.mise = undefined;
     }
     getId(){
         return {name: this.name, id: this.id, total: this.total};
@@ -72,6 +74,7 @@ class Poker{
           "SB",
           "BB",
         ];
+        this.miseTotal = undefined;
     }
 
     pushPlayer(player){
@@ -175,7 +178,9 @@ class Poker{
         index = Number(index);
 
         this.handOutCards(index);
-        this.handOutBlinds(index);
+
+        //not tested yet
+        let blinds = this.handOutBlinds(index);
     }
     onLeaveGame(player, index){
         let indexPlayer = player.indexInLobby;
@@ -352,37 +357,57 @@ class Poker{
     handOutBlinds(index){
         index = Number(index);
         let lobby = this.lobbies[index];
+        let blinds;
+        let dealer = null;
+        let smallBlind = null;
+        let bigBlind = null;
 
         switch (lobby.players.length){
-            case 1:
-                lobby.players[0].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0]});
-                break;
             case 2:
-                lobby.players[0].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0]});
-                lobby.players[1].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1]});
+                lobby.players[0].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0});
+                lobby.players[1].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2});
                 break;
             case 3:
-                lobby.players[0].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0]});
-                lobby.players[1].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1]});
-                lobby.players[2].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[2]});
+
+                dealer = lobby.players[0];
+                smallBlind = lobby.players[1];
+                bigBlind = lobby.players[2];
+
+                dealer.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0});
+                smallBlind.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2});
+                bigBlind.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[2], "mise": 4});
+
+                dealer.blind = this.blinds[0];
+                smallBlind.blind = this.blinds[2];
+                bigBlind.blind = this.blinds[0];
                 break;
             default:
-                let dealer = this.getRndInteger(0, lobby.players.length);
-                let smallBlind = (dealer + 1 >= lobby.players.length) ? 0 : dealer + 1;
-                let bigBlind = (smallBlind + 1 >= lobby.players.length) ? 0 : smallBlind + 1;
-                let tab = [
-                    dealer,
-                    smallBlind,
-                    bigBlind
-                ];
+                let dealerInt = this.getRndInteger(0, lobby.players.length);
+                let smallBlindInt = (dealerInt + 1 >= lobby.players.length) ? 0 : dealerInt + 1;
+                let bigBlindInt = (smallBlindInt + 1 >= lobby.players.length) ? 0 : smallBlindInt + 1;
 
-                lobby.players[dealer].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0]});
-                lobby.players[smallBlind].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1]});
-                lobby.players[bigBlind].connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[2]});
+                dealer = lobby.players[dealerInt];
+                smallBlind = lobby.players[smallBlindInt];
+                bigBlind = lobby.players[bigBlindInt];
 
-                lobby.players.forEach((player, index) => lobby.players[index].connection.sendUTF({"action" : "onReceiveBlindOther"}));
+                dealer.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0});
+                smallBlind.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2});
+                bigBlind.connection.sendUTF({"action" : "onReceiveBlind", "data" : this.blinds[2], "mise": 4});
+
+                lobby.players.forEach((player) => player.connection.sendUTF({"action" : "onReceiveBlindAll"}));
                 break;
         }
+        blinds = {
+            "dealer" : dealer,
+            "smallBlind" : smallBlind,
+            "bigBlind": bigBlind
+        };
+
+        if(dealer != null) dealer.mise = 0;
+        if(smallBlind != null) smallBlind.mise = 2;
+        if(bigBlind != null) bigBlind.mise = 4;
+
+        return blinds;
     }
     getRndInteger(min, max) {
         return Math.floor(Math.random() * (max - min) ) + min;
