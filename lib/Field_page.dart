@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'game_communication.dart';
 
 Future<void> popup({String? title = "", String? text = "", required BuildContext context}) async{
-
   await showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -81,10 +80,12 @@ class _FieldPageState extends State<FieldPage>{
   late int index;
   dynamic cardOne;
   dynamic cardTwo;
-  var miseTotal = 0;
 
-  var me = Me(playerName: game.playerName, total: game.playerTotal);
-  var river = River();
+  int miseTotal = 0;
+  int miseMax = 4;
+
+  Me me = Me(playerName: game.playerName, total: game.playerTotal, id: game.playerId);
+  River river = River();
 
   @override
   void initState(){
@@ -94,7 +95,8 @@ class _FieldPageState extends State<FieldPage>{
     index = widget.index;
     
     players = [
-      for(var i in widget.playerList) if(i["name"] != game.playerName) Player(playerName: i["name"], total: i["total"])
+      for(var i in widget.playerList) if(i["id"] != game.playerId)
+        Player(playerName: i["name"], total: i["total"] as int, id: i["id"])
     ];
     game.send("onEnterGame", "$index");
   }
@@ -104,6 +106,49 @@ class _FieldPageState extends State<FieldPage>{
     game.send("onLeaveGame", "$index");
 
     super.dispose();
+  }
+
+  Future<void> choices() async{
+
+    bool canCheck = me.mise == miseMax;
+
+    await showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          actions: <Widget>[
+            Wrap(
+              children: [
+                TextButton(
+                  onPressed: () {
+
+                  },
+                  child: const Text('Fold'),
+                ),
+                if(canCheck) TextButton(
+                  onPressed: () {
+
+                  },
+                  child: const Text('Check'),
+                ),
+                TextButton(
+                  onPressed: () {
+
+                  },
+                  child: const Text('Raise'),
+                ),
+                if(!canCheck) TextButton(
+                  onPressed: () {
+
+                  },
+                  child: const Text('Call'),
+                ),
+              ],
+            )
+          ],
+        );
+      },
+    );
   }
 
   _onMessageReceived(message){
@@ -125,11 +170,24 @@ class _FieldPageState extends State<FieldPage>{
         break;
 
       case "onReceiveBlind":
-        var blind = message["data"] as String;
-        var mise = message["mise"] as int;
-        me.getMiseBlind(mise: mise, blind: blind);
-        //setState(() {});
-        print("${me.blind} ${me.mise}");
+        me.blind = message["data"];
+        me.mise = message["mise"] as int;
+        break;
+
+      case "onReceiveBlindAll":
+        miseTotal = message["data"] as int;
+        setState(() {});
+        break;
+      case "onPlaying":
+        
+        break;
+      case "onPlayerPlaying":
+        String idPlayerPlaying = message["id"];
+        for (Player player in players) {
+          if(player.id == idPlayerPlaying){
+            player.isPlaying = true;
+          }
+        }
         break;
     }
   }
@@ -181,7 +239,14 @@ class _FieldPageState extends State<FieldPage>{
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   (players.isNotEmpty) ? players[0].plateau(width, height) : River.empty(width, height),
-                  (players.length >= 7) ? players[6].plateau(width, height) : River.empty(width, height),
+                  Text(
+                    miseTotal.toString(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold
+                    ),
+                  ),
+                  (players.length >= 7)? players[6].plateau(width, height) : River.empty(width, height),
                 ],
               ),
             ),
@@ -202,20 +267,15 @@ class _FieldPageState extends State<FieldPage>{
 
 class Player{
 
-  late int mise;
-  late String blind;
-  int total;
+  Player({required this.playerName, required this.total, required this.id});
+
   final String playerName;
+  final String id;
 
-  Player({required this.playerName, required this.total}){
-    mise = 0;
-    blind = "";
-  }
-
-  getMiseBlind({mise, blind}){
-    this.mise = mise;
-    this.blind = blind;
-  }
+  int mise = 0;
+  int total;
+  String blind = "";
+  bool isPlaying = false;
 
   Widget plateau(double width, double height){
 
@@ -230,9 +290,9 @@ class Player{
         children: [
           Text(
             playerName,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: (!isPlaying) ? Colors.white : Colors.blue,
               fontSize: 18
             ),
           ),
@@ -278,7 +338,7 @@ class Me extends Player{
   late String linkCardOne;
   late String linkCardTwo;
 
-  Me({required super.playerName, required super.total}){
+  Me({required super.playerName, required super.total, required super.id}){
     linkCardOne = linkAsset + couverture;
     linkCardTwo = linkAsset + couverture;
   }
@@ -307,7 +367,7 @@ class Me extends Player{
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text(
-                  blind,
+                  blinds[2],
                   style: TextStyle(
                     color: Colors.grey.shade200,
                     fontSize: 20,

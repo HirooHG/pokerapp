@@ -3,11 +3,12 @@ import 'package:web_socket_channel/io.dart';
 
 WebSocketsNotifications sockets = WebSocketsNotifications();
 
+const String ipIut = "10.7.181.177";
 const String ipFixe = "192.168.1.150";
 const String ipPortable = "192.168.1.59";
 const String ipPortable4G = "192.168.43.238";
 
-const _serverAdress = "ws://192.168.1.150:34264";
+const _serverAdress = "ws://$ipIut:34264";
 
 class WebSocketsNotifications {
   static final WebSocketsNotifications _sockets = WebSocketsNotifications._internal();

@@ -74,8 +74,11 @@ class Poker{
           "SB",
           "BB",
         ];
-        this.playerBlinds = undefined;
         this.miseTotal = 0;
+        this.miseMax = 0;
+        this.blind = undefined;
+        this.isGameEnded = false;
+        this.playerPlaying = -1;
     }
 
     pushPlayer(player){
@@ -177,11 +180,24 @@ class Poker{
     }
     onEnterGame(index){
         index = Number(index);
+        let lobby = this.lobbies[index];
 
         this.handOutCards(index);
 
-        //not tested yet
         this.handOutBlinds(index);
+
+        let player = lobby.players.find(player => player.blinds === "D");
+
+        this.playerPlaying = lobby.players[(this.blind["dealer"]).indexInLobby + 1];
+        lobby.players.forEach((player) => {
+           console.log(player.index);
+           console.log(player.blind);
+        });
+        this.playerPlaying.connection.sendUTF(JSON.stringify({"action": "onPlaying"}));
+
+        this.lobbies.forEach((player) => {
+            if(player.index !== this.playerPlaying) player.connection.sendUTF(JSON.stringify({"action": "onPlayerPlaying", "id": this.playerPlaying.id}));
+        });
     }
     onLeaveGame(player, index){
         let indexPlayer = player.indexInLobby;
@@ -222,7 +238,7 @@ class Poker{
     }
     broadcastLobbiesList(){
 
-        this.lobbies.forEach((lobby, index, array) => {
+        this.lobbies.forEach((lobby) => {
             if(lobby.players.length === 0){
                 this.popLobby(lobby);
             }
@@ -290,7 +306,7 @@ class Poker{
     sendChangesInLobbies(){
         this.lobbies.forEach(function(lobby, index){
             lobby.players.forEach(function(player){
-                var message = JSON.stringify({
+                const message = JSON.stringify({
                     action: "onIndexChanged",
                     data: index
                 });
@@ -337,7 +353,7 @@ class Poker{
                     typeTwo,
                     cardTwo
                 ];
-            }while (cardOne !== cardTwo && typeOne !== typeTwo || this.verifSameCards(cardTypeOne, cardTypeTwo, lobby));
+            }while (cardOne !== cardTwo && typeOne !== typeTwo && !this.verifSameCards(cardTypeOne, cardTypeTwo, lobby));
 
             let message = JSON.stringify(
                 {
@@ -363,16 +379,15 @@ class Poker{
         let bigBlind;
 
         switch (lobby.players.length){
-            case 1:
-                dealer = lobby.players[0];
-                dealer.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0})); //{"action" : 0, "data" : this.blinds[0], "mise": 0}
-                break;
             case 2:
                 dealer = lobby.players[0];
                 smallBlind = lobby.players[1];
 
                 dealer.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0}));
                 smallBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2}));
+
+                dealer.blind = this.blinds[0];
+                smallBlind.blind = this.blinds[1];
                 break;
             case 3:
 
@@ -385,8 +400,8 @@ class Poker{
                 bigBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[2], "mise": 4}));
 
                 dealer.blind = this.blinds[0];
-                smallBlind.blind = this.blinds[2];
-                bigBlind.blind = this.blinds[0];
+                smallBlind.blind = this.blinds[1];
+                bigBlind.blind = this.blinds[2];
                 break;
             default:
                 let dealerInt = this.getRndInteger(0, lobby.players.length);
@@ -400,26 +415,27 @@ class Poker{
                 dealer.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[0], "mise": 0}));
                 smallBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[1], "mise": 2}));
                 bigBlind.connection.sendUTF(JSON.stringify({"action" : "onReceiveBlind", "data" : this.blinds[2], "mise": 4}));
+
+                lobby.players.forEach((player) => player.connection.sendUTF({"action" : "onReceiveBlindAll", "data": this.miseTotal}));
                 break;
         }
-        this.blinds = {
+        this.blind = {
             "dealer" : dealer,
             "smallBlind" : smallBlind,
             "bigBlind": bigBlind
         };
-
         dealer.mise = 0;
-        if(smallBlind != null) smallBlind.mise = 2;
+        smallBlind.mise = 2;
         if(bigBlind != null) bigBlind.mise = 4;
     }
-    getRndInteger(min, max) {
+    getRndInteger(min, max){
         return Math.floor(Math.random() * (max - min) ) + min;
     }
 }
 
 const poker = new Poker();
 
-wsServer.on('request', function(request) {
+wsServer.on('request', (request) => {
 
     let connection = request.accept(null, request.origin);
     let player = new Player(request.key, connection);
@@ -428,7 +444,7 @@ wsServer.on('request', function(request) {
 
     connection.sendUTF(JSON.stringify({action: 'connect', data: player.id, total: player.total}));
 
-    connection.on('message', function(data) {
+    connection.on('message', (data) => {
 
         let message = JSON.parse(data.utf8Data);
 
@@ -465,7 +481,7 @@ wsServer.on('request', function(request) {
         }
     });
 
-    connection.on("close", function(){
+    connection.on("close", () => {
         poker.onClose(player);
     });
 });

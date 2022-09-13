@@ -103,7 +103,7 @@ class _LobbyPageState extends State<LobbyPage>{
           ),
           Expanded(
             child: TextButton(
-              onPressed: (playersList.isNotEmpty) ? () {
+              onPressed: (playersList.length > 1) ? () {
                 game.send("onGameBegin", "$index");
               } : null,
               child: const Text(
