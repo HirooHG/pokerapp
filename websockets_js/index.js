@@ -78,7 +78,7 @@ class Poker{
         this.miseMax = 0;
         this.blind = undefined;
         this.isGameEnded = false;
-        this.playerPlaying = -1;
+        this.playerPlaying = undefined;
     }
 
     pushPlayer(player){
@@ -186,21 +186,20 @@ class Poker{
 
         this.handOutBlinds(index);
 
-        let player = lobby.players.find(player => player.blinds === "D");
+        this.playerPlaying = (lobby.players.length === 2)
+            ? this.blind["smallBlind"]
+            : (lobby.players.length === 3)
+                ? this.blind["bigBlind"]
+                : lobby.players[this.blind["bigBlind"].indexInLobby + 1];
 
-        this.playerPlaying = lobby.players[(this.blind["dealer"]).indexInLobby + 1];
-        lobby.players.forEach((player) => {
-           console.log(player.index);
-           console.log(player.blind);
-        });
         this.playerPlaying.connection.sendUTF(JSON.stringify({"action": "onPlaying"}));
 
-        this.lobbies.forEach((player) => {
-            if(player.index !== this.playerPlaying) player.connection.sendUTF(JSON.stringify({"action": "onPlayerPlaying", "id": this.playerPlaying.id}));
+        lobby.players.forEach((player) => {
+            if(player.index !== this.playerPlaying.index)
+                player.connection.sendUTF(JSON.stringify({"action": "onPlayerPlaying", "id": this.playerPlaying.id}));
         });
     }
     onLeaveGame(player, index){
-        let indexPlayer = player.indexInLobby;
         let lobby = this.lobbies[index];
 
         player.cards = undefined;
@@ -210,7 +209,9 @@ class Poker{
         this.popPlayerInLobby(lobby, player);
 
         lobby.players.forEach((playerIn) => {
-            playerIn.connection.sendUTF(JSON.stringify({"action": "onPlayerLeft", "data" : indexPlayer}));
+            console.log(player.id);
+            console.log(typeof player.id);
+            playerIn.connection.sendUTF(JSON.stringify({"action": "onPlayerLeft", "data" : (player.id).toString()}));
         });
 
         player.connection.sendUTF(JSON.stringify({"action" : "onPlayerLeaveLobby"}));
@@ -281,6 +282,39 @@ class Poker{
                     player.connection.sendUTF(message);
                 });
             }
+        });
+    }
+    broadcasBlindsInGame(lobby){
+        let tab = [];
+
+        tab.push((this.blind["dealer"]).id);
+        tab.push((this.blind["smallBlind"]).id);
+        if(this.blind["bigBlind"] !== undefined) tab.push((this.blind["bigBlind"]).id);
+
+        lobby.players.forEach((player) => {
+            player.connection.sendUTF(JSON.stringify({
+                    "action" : "onChangeBlinds",
+                    "data" : tab
+                }
+            ));
+        });
+    }
+    broadcasMiseInGame(lobby){
+        let tab = [];
+        let ids = [];
+
+        lobby.players.forEach((player) => {
+            tab.push(player.mise);
+            ids.push(player.id);
+        });
+
+        lobby.players.forEach((player) => {
+            player.connection.sendUTF(JSON.stringify({
+                    "action" : "onChangeMise",
+                    "data" : tab,
+                    "ids" : ids
+                }
+            ));
         });
     }
 
@@ -427,6 +461,8 @@ class Poker{
         dealer.mise = 0;
         smallBlind.mise = 2;
         if(bigBlind != null) bigBlind.mise = 4;
+        this.broadcasBlindsInGame(lobby);
+        this.broadcasMiseInGame(lobby);
     }
     getRndInteger(min, max){
         return Math.floor(Math.random() * (max - min) ) + min;

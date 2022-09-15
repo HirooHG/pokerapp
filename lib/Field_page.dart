@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'game_communication.dart';
 
 Future<void> popup({String? title = "", String? text = "", required BuildContext context}) async{
+
   await showDialog<void>(
     context: context,
     builder: (BuildContext context) {
@@ -58,7 +59,7 @@ var blinds = [
 ];
 var colorBlind = {
   "BB" : Colors.yellow,
-  "SM" : Colors.red,
+  "SB" : Colors.red,
   "D" : Colors.white
 };
 //#endregion
@@ -102,8 +103,8 @@ class _FieldPageState extends State<FieldPage>{
   }
   @override
   void dispose(){
-    game.removeListener(_onMessageReceived);
     game.send("onLeaveGame", "$index");
+    game.removeListener(_onMessageReceived);
 
     super.dispose();
   }
@@ -154,40 +155,76 @@ class _FieldPageState extends State<FieldPage>{
   _onMessageReceived(message){
     switch(message["action"]){
       case "onHandOutCards":
-        cardOne = message["data"]["cardOne"];
-        cardTwo = message["data"]["cardTwo"];
-        var linkOne = "$linkAsset${cardOne[0]}/${cardOne[1]}.jpg";
-        var linkTwo = "$linkAsset${cardTwo[0]}/${cardTwo[1]}.jpg";
-        me.getCards(linkOne, linkTwo);
-        setState(() {});
+        setState(() {
+          cardOne = message["data"]["cardOne"];
+          cardTwo = message["data"]["cardTwo"];
+          var linkOne = "$linkAsset${cardOne[0]}/${cardOne[1]}.jpg";
+          var linkTwo = "$linkAsset${cardTwo[0]}/${cardTwo[1]}.jpg";
+          me.getCards(linkOne, linkTwo);
+        });
         break;
 
       case "onPlayerLeft":
-        var indexPlayer = message["data"] as int;
-        players.removeAt(indexPlayer);
-        widget.playerList.removeAt(indexPlayer);
-        setState(() {});
+        var idPlayer = message["data"];
+
+        popup(context: context, text: idPlayer, title: idPlayer.runtimeType.toString());
         break;
 
       case "onReceiveBlind":
-        me.blind = message["data"];
-        me.mise = message["mise"] as int;
+        setState(() {
+          me.blind = message["data"] as String;
+          me.mise = message["mise"] as int;
+        });
         break;
 
       case "onReceiveBlindAll":
-        miseTotal = message["data"] as int;
-        setState(() {});
+        setState(() {
+          miseTotal = message["data"] as int;
+        });
         break;
       case "onPlaying":
-        
+
         break;
       case "onPlayerPlaying":
-        String idPlayerPlaying = message["id"];
-        for (Player player in players) {
-          if(player.id == idPlayerPlaying){
-            player.isPlaying = true;
+        setState(() {
+          String idPlayerPlaying = message["id"];
+          for (Player player in players) {
+            if(player.id == idPlayerPlaying){
+              player.isPlaying = true;
+            }
           }
-        }
+        });
+        break;
+      case "onChangeBlinds":
+        setState(() {
+          var dealerId = message["data"][0] as String;
+          var smallBlindId = message["data"][1] as String;
+          var bigBlindId;
+
+          if((message["data"] as List<dynamic>).length >= 3) bigBlindId = message["data"][2] as String;
+
+          players.forEach((player) {
+            if(player.id == dealerId) player.blind = blinds[0];
+            if(player.id == smallBlindId) player.blind = blinds[1];
+            if(bigBlindId != null && player.id == bigBlindId) player.blind = blinds[2];
+          });
+        });
+        break;
+      case "onChangeMise":
+        setState(() {
+          var list = message["data"] as List<dynamic>;
+          var ids = message["ids"] as List<dynamic>;
+          for(int i = 0; i < list.length; i++){
+            var mise = list[i];
+            var id = ids[i];
+            if(id == me.id) continue;
+            var player;
+            players.forEach((element) {
+              if(element.id == id) player = element;
+            });
+            player.mise = mise;
+          }
+        });
         break;
     }
   }
@@ -297,6 +334,7 @@ class Player{
             ),
           ),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthBox / 2.55, height: heightBox / 2.55),
               Image.asset(linkAsset + couverture, fit: BoxFit.fill, width: widthBox / 2.55, height: heightBox / 2.55),
@@ -367,9 +405,9 @@ class Me extends Player{
               child: Padding(
                 padding: const EdgeInsets.all(15),
                 child: Text(
-                  blinds[2],
-                  style: TextStyle(
-                    color: Colors.grey.shade200,
+                  blind,
+                  style: const TextStyle(
+                    color: Colors.black,
                     fontSize: 20,
                     fontWeight: FontWeight.bold
                   ),
@@ -407,6 +445,7 @@ class Me extends Player{
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Image.asset(linkCardOne, fit: BoxFit.fill, width: sizeBoxX, height: sizeBoxY),
                   Image.asset(linkCardTwo, fit: BoxFit.fill, width: sizeBoxX, height: sizeBoxY),
